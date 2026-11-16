@@ -1,56 +1,105 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>First App</title>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  </head>
-  <body>
-    <h1>This is index2.html</h1>
-    <h3>Degrees offered</h3>
-    <div style="margin:10px">
-      <input id="srch1" type="text" placeholder="Search by Name">
-    </div>
-    <form action="/srch/" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-        {{ form }}
-        <br><br>
-        <div style="float:right">
-          <button type="submit" >Search</button>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Degrees Offered | First App</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 1rem; line-height: 1.5; }
+    header { display: flex; align-items: center; gap: 1rem; }
+    header img { height: 48px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: .5rem .75rem; text-align: left; }
+    th { background: #f4f4f4; }
+    .search-bar { margin: 1rem 0; }
+    .search-bar input { width: 100%; padding: .5rem; box-sizing: border-box; }
+    .form-actions { text-align: right; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="{% static 'logo.png' %}" alt="Amrita logo">
+    <h1>Degrees Offered</h1>
+  </header>
+
+  <main>
+    <section aria-labelledby="filter-heading">
+      <h2 id="filter-heading">Filter this list</h2>
+      <div class="search-bar">
+        <label for="srch1">Search by name</label>
+        <input id="srch1" type="search" placeholder="Start typing to filter the table">
+      </div>
+    </section>
+
+    <section aria-labelledby="search-heading">
+      <h2 id="search-heading">Search</h2>
+      {# No file upload here, so the default form encoding is enough #}
+      <form action="/srch/" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+          <button type="submit">Search</button>
         </div>
-    </form>
-   
-    <table border="1">
-      {% for r in degree_rows %}
-        <tr>
-          <td>{{ r.title }}</td>
-          <td>{{ r.branch }}</td>
-        </tr>
-      {% endfor %}
-    </table>
+      </form>
+    </section>
 
-    <h2>{{ inject_var }}</h2>
-    <P>Click <a href="./help.html">here</a> for help</P>
-    <img src="../static/logo.png"alt="Amrita Logo">
+    <section aria-labelledby="degrees-heading">
+      <h2 id="degrees-heading">Degrees</h2>
+      <table id="degree-table">
+        <thead>
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Branch</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in degree_rows %}
+            <tr>
+              <td>{{ r.title }}</td>
+              <td>{{ r.branch }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="2">No degrees found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
 
-      {% if evenOrOdd == 0 %}
+    {% if inject_var %}
+      <h2>{{ inject_var }}</h2>
+    {% endif %}
 
-        <h2>Hello Amrita.</h2>
+    {% if evenOrOdd == 0 %}
+      <h2>Hello Amrita.</h2>
+    {% else %}
+      <hr>
+    {% endif %}
 
-      {% else %}
+    {% if fruits %}
+      <h2>Fruits</h2>
+      <ul>
+        {% for x in fruits %}
+          <li>{{ x }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </main>
 
-        <h2>*********************************</h2>
+  <footer>
+    <p>Need help? <a href="./help.html">Read the help page</a>.</p>
+  </footer>
 
-      {% endif %}
-
-
-
-      {% for x in fruits %}
-
-        <h1>{{ x }}</h1>
-
-      {% endfor %}
-      
-  </body>
- 
+  <script>
+    // Live-filter table rows (replaces the unused jQuery dependency)
+    const input = document.getElementById("srch1");
+    const rows = document.querySelectorAll("#degree-table tbody tr");
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      rows.forEach(row => {
+        row.hidden = q !== "" && !row.textContent.toLowerCase().includes(q);
+      });
+    });
+  </script>
+</body>
 </html>
